@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../services/auth';  // Importar el servicio de autenticación
 
 const Login = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');  // Cambiado de email a username
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -11,11 +11,11 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const data = await login(email, password);  // Llamar al servicio de autenticación
-            localStorage.setItem('token', data.access);  // Guardar el token en localStorage
-            navigate('/home');  // Redirigir a la página de inicio
+            const data = await login(username, password);  // Usando username
+            localStorage.setItem('token', data.access);
+            navigate('/home');
         } catch (err) {
-            setError('Correo electrónico o contraseña incorrectos');
+            setError('Usuario o contraseña incorrectos');
         }
     };
 
@@ -24,12 +24,12 @@ const Login = () => {
             <div style={styles.container}>
                 <h2 style={styles.h2}>Bienvenido(a)</h2>
                 <form onSubmit={handleLogin}>
-                    <label>Correo Electrónico</label>
+                    <label>Usuario</label>
                     <input
-                        type="email"
-                        placeholder="Ingresa tu correo"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="text"  // Cambiado de email a text
+                        placeholder="Ingresa tu usuario"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
                         style={styles.input}
                     />
