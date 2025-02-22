@@ -1,0 +1,13 @@
+[
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "iPhone 11",
+            "brand": "Apple",
+            "category": "Smartphone",
+            "price": 998.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z","stock": 50,
+            "features": {"ram": "8GB", "storage": "122GB", "pantalla": "5.1\" Super Retina XDR"}
+        }
+    }]
