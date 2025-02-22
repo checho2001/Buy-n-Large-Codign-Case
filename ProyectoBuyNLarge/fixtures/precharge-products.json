@@ -1,0 +1,481 @@
+[
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "iPhone 13",
+            "brand": "Apple",
+            "category": "Smartphone",
+            "price": 999.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 50,
+            "features": {"ram": "6GB", "storage": "128GB", "pantalla": "6.1\" Super Retina XDR"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Galaxy S22",
+            "brand": "Samsung",
+            "category": "Smartphone",
+            "price": 799.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 75,
+            "features": {"ram": "8GB", "storage": "256GB", "pantalla": "6.1\" Dynamic AMOLED 2X"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "MacBook Pro 16",
+            "brand": "Apple",
+            "category": "Laptop",
+            "price": 2399.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 30,
+            "features": {"ram": "16GB", "storage": "512GB SSD", "procesador": "M1 Pro"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "PlayStation 5",
+            "brand": "Sony",
+            "category": "Consola",
+            "price": 499.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 20,
+            "features": {"almacenamiento": "825GB SSD", "resolucion": "8K", "GPU": "AMD RDNA 2"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Xbox Series X",
+            "brand": "Microsoft",
+            "category": "Consola",
+            "price": 499.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 25,
+            "features": {"almacenamiento": "1TB SSD", "resolucion": "4K", "GPU": "AMD RDNA 2"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "iPad Pro 12.9",
+            "brand": "Apple",
+            "category": "Tablet",
+            "price": 1099.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 40,
+            "features": {"ram": "8GB", "storage": "256GB", "pantalla": "12.9\" Liquid Retina XDR"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Galaxy Tab S8",
+            "brand": "Samsung",
+            "category": "Tablet",
+            "price": 699.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 35,
+            "features": {"ram": "8GB", "storage": "128GB", "pantalla": "11\" LTPS TFT"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Surface Pro 8",
+            "brand": "Microsoft",
+            "category": "Tablet",
+            "price": 1099.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 20,
+            "features": {"ram": "16GB", "storage": "256GB SSD", "pantalla": "13\" PixelSense"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "AirPods Pro",
+            "brand": "Apple",
+            "category": "Audífonos",
+            "price": 249.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 100,
+            "features": {"cancelacion_ruido": true, "bateria": "24h", "resistencia_agua": true}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Galaxy Buds Pro",
+            "brand": "Samsung",
+            "category": "Audífonos",
+            "price": 199.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 80,
+            "features": {"cancelacion_ruido": true, "bateria": "18h", "resistencia_agua": true}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Sony WH-1000XM4",
+            "brand": "Sony",
+            "category": "Audífonos",
+            "price": 349.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 60,
+            "features": {"cancelacion_ruido": true, "bateria": "30h", "resistencia_agua": false}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Apple Watch Series 7",
+            "brand": "Apple",
+            "category": "Smartwatch",
+            "price": 399.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 50,
+            "features": {"pantalla": "45mm", "resistencia_agua": "50m", "bateria": "18h"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Galaxy Watch 4",
+            "brand": "Samsung",
+            "category": "Smartwatch",
+            "price": 249.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 70,
+            "features": {"pantalla": "44mm", "resistencia_agua": "50m", "bateria": "40h"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Fitbit Charge 5",
+            "brand": "Fitbit",
+            "category": "Smartwatch",
+            "price": 179.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 90,
+            "features": {"pantalla": "AMOLED", "resistencia_agua": "50m", "bateria": "7d"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Nintendo Switch OLED",
+            "brand": "Nintendo",
+            "category": "Consola",
+            "price": 349.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 30,
+            "features": {"almacenamiento": "64GB", "pantalla": "7\" OLED", "bateria": "4.5-9h"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Oculus Quest 2",
+            "brand": "Meta",
+            "category": "Realidad Virtual",
+            "price": 299.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 40,
+            "features": {"almacenamiento": "128GB", "pantalla": "1832x1920", "bateria": "2-3h"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "DJI Mavic Air 2",
+            "brand": "DJI",
+            "category": "Dron",
+            "price": 799.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 15,
+            "features": {"camara": "4K", "bateria": "34min", "alcance": "10km"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "GoPro Hero 10",
+            "brand": "GoPro",
+            "category": "Cámara",
+            "price": 499.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 25,
+            "features": {"resolucion": "5.3K", "fps": "60", "resistencia_agua": "10m"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Sony Alpha 7 III",
+            "brand": "Sony",
+            "category": "Cámara",
+            "price": 1999.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 10,
+            "features": {"resolucion": "24.2MP", "tipo": "Full Frame", "video": "4K"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Canon EOS R5",
+            "brand": "Canon",
+            "category": "Cámara",
+            "price": 3899.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 5,
+            "features": {"resolucion": "45MP", "tipo": "Full Frame", "video": "8K"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "LG OLED C1",
+            "brand": "LG",
+            "category": "Televisor",
+            "price": 1499.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 20,
+            "features": {"pantalla": "55\"", "resolucion": "4K", "tipo": "OLED"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Samsung QN90A",
+            "brand": "Samsung",
+            "category": "Televisor",
+            "price": 1799.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 15,
+            "features": {"pantalla": "65\"", "resolucion": "4K", "tipo": "QLED"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Sony Bravia XR A80J",
+            "brand": "Sony",
+            "category": "Televisor",
+            "price": 1999.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 10,
+            "features": {"pantalla": "55\"", "resolucion": "4K", "tipo": "OLED"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Amazon Echo Dot 4",
+            "brand": "Amazon",
+            "category": "Asistente Virtual",
+            "price": 49.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 200,
+            "features": {"asistente": "Alexa", "conexion": "Wi-Fi", "colores": ["azul", "negro", "blanco"]}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Google Nest Hub",
+            "brand": "Google",
+            "category": "Asistente Virtual",
+            "price": 99.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 150,
+            "features": {"asistente": "Google Assistant", "pantalla": "7\"", "conexion": "Wi-Fi"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Apple HomePod Mini",
+            "brand": "Apple",
+            "category": "Asistente Virtual",
+            "price": 99.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 120,
+            "features": {"asistente": "Siri", "conexion": "Wi-Fi", "colores": ["blanco", "negro"]}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "HP LaserJet Pro",
+            "brand": "HP",
+            "category": "Impresora",
+            "price": 299.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 50,
+            "features": {"tipo": "Láser", "color": false, "velocidad": "30ppm"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Epson EcoTank",
+            "brand": "Epson",
+            "category": "Impresora",
+            "price": 399.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 40,
+            "features": {"tipo": "Inyección de tinta", "color": true, "velocidad": "15ppm"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Canon PIXMA Pro",
+            "brand": "Canon",
+            "category": "Impresora",
+            "price": 499.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 30,
+            "features": {"tipo": "Inyección de tinta", "color": true, "velocidad": "20ppm"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Logitech MX Master 3",
+            "brand": "Logitech",
+            "category": "Mouse",
+            "price": 99.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 80,
+            "features": {"inalambrico": true, "dpi": "4000", "bateria": "70d"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Razer DeathAdder V2",
+            "brand": "Razer",
+            "category": "Mouse",
+            "price": 69.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 90,
+            "features": {"inalambrico": false, "dpi": "20000", "rgb": true}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Corsair K95 RGB",
+            "brand": "Corsair",
+            "category": "Teclado",
+            "price": 199.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 60,
+            "features": {"mecanico": true, "rgb": true, "teclas": "Cherry MX"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Logitech G Pro X",
+            "brand": "Logitech",
+            "category": "Teclado",
+            "price": 149.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 70,
+            "features": {"mecanico": true, "rgb": true, "teclas": "GX Blue"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "HyperX Cloud II",
+            "brand": "HyperX",
+            "category": "Audífonos",
+            "price": 99.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 100,
+            "features": {"inalambrico": false, "microfono": true, "rgb": false}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "SteelSeries Arctis 7",
+            "brand": "SteelSeries",
+            "category": "Audífonos",
+            "price": 149.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 80,
+            "features": {"inalambrico": true, "microfono": true, "bateria": "24h"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Samsung 980 Pro",
+            "brand": "Samsung",
+            "category": "Almacenamiento",
+            "price": 149.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 200,
+            "features": {"capacidad": "1TB", "tipo": "NVMe", "velocidad": "7000MB/s"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "WD Blue SN550",
+            "brand": "Western Digital",
+            "category": "Almacenamiento",
+            "price": 99.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 150,
+            "features": {"capacidad": "1TB", "tipo": "NVMe", "velocidad": "2400MB/s"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "Seagate Barracuda",
+            "brand": "Seagate",
+            "category": "Almacenamiento",
+            "price": 49.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 300,
+            "features": {"capacidad": "2TB", "tipo": "HDD", "velocidad": "7200rpm"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "ASUS ROG Strix",
+            "brand": "ASUS",
+            "category": "Tarjeta Gráfica",
+            "price": 799.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 10,
+            "features": {"modelo": "RTX 3060", "vram": "12GB", "tipo": "GDDR6"}
+        }
+    },
+    {
+        "model": "inventory.Product",
+        "pk": null,
+        "fields": {
+            "name": "MSI Gaming X Trio",
+            "brand": "MSI",
+            "category": "Tarjeta Gráfica",
+            "price": 1499.99,
+            "created_at": "2022-01-01T00:00:00Z","updated_at": "2022-01-01T00:00:00Z", "stock": 5,
+            "features": {"modelo": "RTX 3080", "vram": "10GB", "tipo": "GDDR6X"}
+        }
+    }]

@@ -1,11 +1,7 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import ChatSessionViewSet, ChatMessageViewSet
+from django.urls import path
 
-router = DefaultRouter()
-router.register(r'sessions', ChatSessionViewSet)
-router.register(r'messages', ChatMessageViewSet)
+from .views import ChatBotView
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('v1/make_question/', ChatBotView.as_view(), name='chatbot'),
 ]
