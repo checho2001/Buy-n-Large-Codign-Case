@@ -59,15 +59,31 @@ def generate_query_agent(prompt, chat_history):
     ])
 
 def generate_response_agent(results, question):
+    # Convertir Decimal a float en los resultados
+    processed_results = []
+    for item in results:
+        processed_item = item.copy()
+        if 'price' in processed_item:
+            processed_item['price'] = float(processed_item['price'])
+        processed_results.append(processed_item)
+
     system_prompt = f"""Analiza estos resultados de productos y genera una respuesta natural:
     - Destaca características clave
     - Menciona disponibilidad
     - Precios relevantes
     - Mantén respuestas concisas
     
-    Resultados: {json.dumps(results[:3])} (mostrando primeros 3 de {len(results)})
     Pregunta original: {question}
     """
+
+    if len(processed_results) < 3:
+        system_prompt += f"""
+        Resultados: {json.dumps(processed_results)}
+        """
+    else:
+        system_prompt += f"""
+        Resultados: {json.dumps(processed_results[:3])} (mostrando primeros 3 de {len(processed_results)})
+        """
     
     return get_openai_response([{
         "role": "system",
@@ -96,22 +112,24 @@ class ChatBotView(APIView):
         generated_query = generate_query_agent(user_message, chat_history[-2:])
         print(generated_query)
         
-        try:
-            # Generar consulta con contexto histórico
-            
-            
-            # Ejecutar consulta de forma segura
-            safe_globals = {'Product': Product}
-            products = eval(generated_query, {"__builtins__": None}, safe_globals)
-            results = list(products.values('name', 'brand', 'price', 'stock', 'features'))
+       
+        # Generar consulta con contexto histórico
+        
+        
+        # Ejecutar consulta de forma segura
+        safe_globals = {'Product': Product}
+        products = eval(generated_query, {"__builtins__": None}, safe_globals)
+        results = list(products.values('name', 'brand', 'price', 'stock', 'features'))
 
-            print(results)
-            
-            # Generar respuesta natural
-            bot_response = generate_response_agent(results, user_message)
-            
-            # Actualizar caché y historial
-            chat_history.append({"user": user_message, "bot": bot_response})
+        print(results)
+        
+        # Generar respuesta natural
+        bot_response = generate_response_agent(results, user_message)
+        
+        # Actualizar caché y historial
+        chat_history.append({"user": user_message, "bot": bot_response})
+
+        try:
             cache.set(cache_key, chat_history, timeout=3600)  # 1 hora de caché
             
             return JsonResponse({"response": bot_response, "results_count": len(results)})
