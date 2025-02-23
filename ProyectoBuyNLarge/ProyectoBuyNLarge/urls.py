@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from chatbot.views import ChatBotView
 
 urlpatterns = [
     # Rutas de API
@@ -13,6 +14,7 @@ urlpatterns = [
     path('api/users/', include('users.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/chatbot/', ChatBotView.as_view(), name='chatbot'),
 
     # Ruta para React
     re_path(r'^.*', TemplateView.as_view(template_name='index.html')),
