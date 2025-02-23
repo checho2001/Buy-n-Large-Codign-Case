@@ -31,6 +31,7 @@ def contar_productos_nuevos_mes_actual():
     primer_dia_mes = hoy.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     return Product.objects.filter(created_at__gte=primer_dia_mes).count()
 
+print(calcular_valor_inventario_total())
 
 ### Graphics and charts
 
