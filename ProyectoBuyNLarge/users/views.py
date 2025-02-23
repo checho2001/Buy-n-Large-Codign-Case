@@ -1,6 +1,9 @@
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -13,3 +16,8 @@ def login_view(request):
         else:
             messages.error(request, 'Usuario o contraseña incorrectos')
     return render(request, 'users/login.html')
+
+class RoleView(APIView):
+    def get(self, request):
+        user = request.user
+        return Response({'role': user.role})
