@@ -11,12 +11,13 @@ from operator import itemgetter
 
 
 
-from .models import Product  # Importa tu modelo de Producto
+from inventory.models import Product  # Importa tu modelo de Producto
 
 
 class KPIView(APIView):
     ### KPIs
 
+    @staticmethod
     def calcular_valor_inventario_total():
         # Sumatoria de (price * stock) para todos los productos
         total = Product.objects.aggregate(
@@ -24,14 +25,17 @@ class KPIView(APIView):
         )['valor_total'] or 0
         return total
 
+    @staticmethod
     def contar_productos_stock_bajo(umbral=10):
         # Productos con stock menor al umbral (default 10)
         return Product.objects.filter(stock__lt=umbral).count()
 
+    @staticmethod
     def contar_productos_agotados():
         # Productos con stock = 0
         return Product.objects.filter(stock=0).count()
 
+    @staticmethod
     def contar_productos_nuevos_mes_actual():
         # Productos creados este mes
         hoy = timezone.now()
@@ -40,11 +44,12 @@ class KPIView(APIView):
     
     def get(self, request):
         kpis = {
-            'valor_inventario_total': self.calcular_valor_inventario_total(),
-            'productos_stock_bajo': self.contar_productos_stock_bajo(),
-            'productos_agotados': self.contar_productos_agotados(),
-            'productos_nuevos_mes_actual': self.contar_productos_nuevos_mes_actual(),
+            'valor_inventario_total': KPIView.calcular_valor_inventario_total(),
+            'productos_stock_bajo': KPIView.contar_productos_stock_bajo(umbral=10),
+            'productos_agotados': KPIView.contar_productos_agotados(),
+            'productos_nuevos_mes_actual': KPIView.contar_productos_nuevos_mes_actual(),
         }
+        print(kpis)
         return Response(kpis)
 
 

@@ -256,7 +256,9 @@ class ChatBotView(APIView):
         except Exception as e:
             logger.error(f"Error generando respuesta del bot: {str(e)}")
             return "Lo siento, hubo un error procesando tu mensaje."
-=======
+
+
+
 class ChatBotView(APIView):
     """ Uncomment this code for JWT and user validation
     authentication_classes = [JWTAuthentication]
