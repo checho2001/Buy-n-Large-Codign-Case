@@ -24,7 +24,7 @@ OPENAI_API_KEY = os.getenv('OPENAI-API-KEY')
 
 DEEPSEEK_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
 
-def get_openai_response(messages, temperature=0.3, model="gpt-3.5-turbo"):
+def get_openai_response(messages, temperature=0.3, model="gpt-4o-mini"):
     headers = {
         "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json"
@@ -39,15 +39,27 @@ def get_openai_response(messages, temperature=0.3, model="gpt-3.5-turbo"):
     response = requests.post(OPENAI_ENDPOINT, headers=headers, json=payload)
     return response.json()['choices'][0]['message']['content']
 
+
+def get_possible_filter_options():
+    qcat = Product.objects.values('category').distinct()
+    qbrand = Product.objects.values('brand').distinct()
+
+    return [str(qcat), str(qbrand)]
+
 # Modificaciones en los agentes (solo cambia la función de llamada)
 def generate_query_agent(prompt, chat_history):
-    system_prompt = """Eres un experto en Django ORM. Genera consultas de base de datos basadas en:
+    possible_filter_options = get_possible_filter_options()
+    system_prompt = f"""Eres un experto en Django ORM. Genera consultas de base de datos basadas en:
     1. Campos disponibles: name, brand, category, price, stock, features (JSON)
     2. Para features usar sintaxis de doble guión: features__ram=16GB
-    3. Solo devuelve el código Python/Django ORM, sin explicaciones
+    3. Solo devuelve el código Python/Django ORM, sin explicaciones y tampoco tags de descripción de código
     4. Ejemplos válidos:
        - Product.objects.filter(category='Laptops', stock__gt=0)
        - Product.objects.filter(features__storage__icontains='512GB').exclude(stock=0)
+       - ¡INCORRECTO! Product.objects.filter(category='Laptops').count()
+    5. CRUCIAL: Solo usa métodos que devuelvan registros (filter/get/exclude/order_by). Prohibido count/aggregate/annotate/values
+    6. Ten en  cuenta que hay estas opciones de categoria {possible_filter_options[0]} y de marca {possible_filter_options[1]}
+    
     
     Pregunta del usuario: {prompt}
     Historial: {chat_history}
@@ -91,12 +103,6 @@ def generate_response_agent(results, question):
     }])
 
 
-
-
-
-def get_possible_filter_options():
-    qcat = Product.objects.values('category').distinct()
-    qbrand = Product.objects.values('brand').distinct()
 
 
 class ChatBotView(APIView):

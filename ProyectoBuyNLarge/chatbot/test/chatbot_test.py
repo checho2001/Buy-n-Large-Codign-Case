@@ -7,7 +7,7 @@ def test_chatbot_endpoint():
     
     # Datos de la solicitud
     payload = {
-        "message": "¿Cuáles Smartphone Apple tienes en inventario?"
+        "message": "¿Cuántas Laptop tienes?"
     }
     
     # Cabeceras
