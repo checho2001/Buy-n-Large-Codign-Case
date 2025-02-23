@@ -47,6 +47,13 @@ def get_openai_response(messages, temperature=0.3, model="gpt-4o-mini"):
     response = requests.post(OPENAI_ENDPOINT, headers=headers, json=payload)
     return response.json()['choices'][0]['message']['content']
 
+def get_chat_history(session_id):
+    formatted_history = []
+    chat_history = ChatMessage.objects.filter(session_id=session_id).order_by('created_at')[:10]
+    for msg in chat_history:
+        role = "assistant" if msg.is_bot else "user"
+        formatted_history.append({"role": role, "content": msg.message_text})
+    return formatted_history
 
 def get_possible_filter_options():
     qcat = Product.objects.values('category').distinct()
@@ -66,13 +73,13 @@ def generate_query_agent(prompt, chat_history):
        - Product.objects.filter(features__storage__icontains='512GB').exclude(stock=0)
        - ¡INCORRECTO! Product.objects.filter(category='Laptops').count()
     5. CRUCIAL: Solo usa métodos que devuelvan registros (filter/get/exclude/order_by). Prohibido count/aggregate/annotate/values
-    6. Ten en  cuenta que hay estas opciones de categoria {possible_filter_options[0]} y de marca {possible_filter_options[1]}
+    6. Ten en cuenta que hay estas opciones de categoria {possible_filter_options[0]} y de marca {possible_filter_options[1]}
+    7. Ten en cuenta que el usuario tiene un historial de preguntas y respuestas {chat_history}
     
     
     Pregunta del usuario: {prompt}
-    Historial: {chat_history}
     """
-    
+    print(system_prompt)
     return get_openai_response([
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": prompt}
@@ -194,7 +201,8 @@ class ChatBotView(APIView):
             logger.info(f"Mensaje de usuario guardado: {user_message_obj.id}")
 
             # Generar respuesta del bot
-            bot_response = self.generate_bot_response(user_message)
+            history_chat = get_chat_history(chat_session.id)
+            bot_response = self.generate_bot_response(user_message,history_chat)
 
             # Guardar respuesta del bot
             bot_message = ChatMessage.objects.create(
@@ -250,11 +258,11 @@ class ChatBotView(APIView):
             logger.error(f"Error obteniendo historial: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    def generate_bot_response(self, user_message):
+    def generate_bot_response(self, user_message, history_chat):
         # Aquí va tu lógica existente de generación de respuesta
         # Usando generate_query_agent y generate_response_agent
         try:
-            generated_query = generate_query_agent(user_message, [])
+            generated_query = generate_query_agent(user_message, history_chat)
             products = eval(generated_query, {"__builtins__": None}, {'Product': Product})
             results = list(products.values('name', 'brand', 'price', 'stock', 'features'))
             bot_response = generate_response_agent(results, user_message)
