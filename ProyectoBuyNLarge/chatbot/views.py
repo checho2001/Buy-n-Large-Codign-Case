@@ -1,10 +1,15 @@
- 
 from django.core.cache import cache
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth import get_user_model
+from django.db import transaction
+from .models.chat_session import ChatSession
+from .models.chat_message import ChatMessage
+from rest_framework import viewsets
+from django.db.models import Subquery, OuterRef
 
 from inventory.models import Product
 
@@ -12,6 +17,7 @@ import requests
 import json
 from dotenv import load_dotenv
 import os
+import logging
 
 
 OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions"
@@ -23,6 +29,8 @@ load_dotenv()  # carga las variables del .env
 OPENAI_API_KEY = os.getenv('OPENAI-API-KEY')
 
 DEEPSEEK_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
+
+logger = logging.getLogger(__name__)
 
 def get_openai_response(messages, temperature=0.3, model="gpt-4o-mini"):
     headers = {
@@ -105,45 +113,152 @@ def generate_response_agent(results, question):
 
 
 
-class ChatBotView(APIView):
-    def post(self, request):        
-        data = json.loads(request.body)
-        user_message = data['message']
-        session_key = request.session.session_key
-        
-        # Recuperar historial de caché
-        cache_key = f"chat_history_{session_key}"
-        chat_history = cache.get(cache_key, [])
-
-        generated_query = generate_query_agent(user_message, chat_history[-2:])
-        print(generated_query)
-        
-       
-        # Generar consulta con contexto histórico
-        
-        
-        # Ejecutar consulta de forma segura
-        safe_globals = {'Product': Product}
-        products = eval(generated_query, {"__builtins__": None}, safe_globals)
-        results = list(products.values('name', 'brand', 'price', 'stock', 'features'))
-
-        print(results)
-        
-        # Generar respuesta natural
-        bot_response = generate_response_agent(results, user_message)
-        
-        # Actualizar caché y historial
-        chat_history.append({"user": user_message, "bot": bot_response})
-
+class ChatBotViewSet(viewsets.ViewSet):
+    def get_conversations(self, request):
         try:
-            cache.set(cache_key, chat_history, timeout=3600)  # 1 hora de caché
+            user = request.user if request.user.is_authenticated else None
             
-            return JsonResponse({"response": bot_response, "results_count": len(results)})
-        
+            conversations = ChatSession.objects.filter(
+                user=user
+            ).annotate(
+                last_message=Subquery(
+                    ChatMessage.objects.filter(
+                        session=OuterRef('pk')
+                    ).order_by('-created_at').values('message_text')[:1]
+                )
+            ).order_by('-created_at')[:10]
+
+            return Response({
+                'conversations': [{
+                    'id': str(conv.id),
+                    'created_at': conv.created_at,
+                    'last_message': conv.last_message,
+                } for conv in conversations]
+            })
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
+            logger.error(f"Error obteniendo conversaciones: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_messages(self, request, conversation_id):
+        try:
+            messages = ChatMessage.objects.filter(
+                session_id=conversation_id
+            ).order_by('created_at')
+
+            return Response({
+                'messages': [{
+                    'id': msg.id,
+                    'message_text': msg.message_text,
+                    'is_bot': msg.is_bot,
+                    'created_at': msg.created_at
+                } for msg in messages]
+            })
+        except Exception as e:
+            logger.error(f"Error obteniendo mensajes: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class ChatBotView(APIView):
+    @transaction.atomic
+    def post(self, request):
+        try:
+            data = request.data
+            user_message = data.get('message')
+            session_id = data.get('session_id')
+            
+            # Manejar usuario anónimo o autenticado
+            user = request.user if request.user.is_authenticated else None
+
+            logger.info(f"Procesando mensaje: {user_message} para sesión: {session_id}")
+
+            # Validar mensaje
+            if not user_message:
+                return Response({"error": "El mensaje es requerido"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Gestionar sesión
+            if session_id:
+                try:
+                    chat_session = ChatSession.objects.get(id=session_id)
+                except ChatSession.DoesNotExist:
+                    chat_session = ChatSession.objects.create(user=user)
+                    logger.info(f"Nueva sesión creada: {chat_session.id}")
+            else:
+                chat_session = ChatSession.objects.create(user=user)
+                logger.info(f"Nueva sesión creada: {chat_session.id}")
+
+            # Guardar mensaje del usuario
+            user_message_obj = ChatMessage.objects.create(
+                session=chat_session,
+                message_text=user_message,
+                is_bot=False
+            )
+            logger.info(f"Mensaje de usuario guardado: {user_message_obj.id}")
+
+            # Generar respuesta del bot
+            bot_response = self.generate_bot_response(user_message)
+
+            # Guardar respuesta del bot
+            bot_message = ChatMessage.objects.create(
+                session=chat_session,
+                message_text=bot_response,
+                is_bot=True
+            )
+            logger.info(f"Respuesta del bot guardada: {bot_message.id}")
+
+            return Response({
+                "session_id": str(chat_session.id),
+                "messages": {
+                    "user_message": {
+                        "id": user_message_obj.id,
+                        "text": user_message_obj.message_text,
+                        "created_at": user_message_obj.created_at
+                    },
+                    "bot_message": {
+                        "id": bot_message.id,
+                        "text": bot_message.message_text,
+                        "created_at": bot_message.created_at
+                    }
+                }
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error en el procesamiento del chat: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        # Opcional: Puedes añadir esto si quieres manejar solicitudes GET
-        return JsonResponse({"message": "Este endpoint solo acepta solicitudes POST"}, 
-                          status=405)
+        try:
+            session_id = request.GET.get('session_id')
+            
+            if not session_id:
+                return Response({"error": "Se requiere session_id"}, status=status.HTTP_400_BAD_REQUEST)
+                
+            # Obtener mensajes de la sesión
+            messages = ChatMessage.objects.filter(
+                session_id=session_id
+            ).order_by('created_at').values(
+                'id',
+                'message_text',
+                'is_bot',
+                'created_at'
+            )
+            
+            return Response({
+                "session_id": session_id,
+                "messages": list(messages)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error obteniendo historial: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def generate_bot_response(self, user_message):
+        # Aquí va tu lógica existente de generación de respuesta
+        # Usando generate_query_agent y generate_response_agent
+        try:
+            generated_query = generate_query_agent(user_message, [])
+            products = eval(generated_query, {"__builtins__": None}, {'Product': Product})
+            results = list(products.values('name', 'brand', 'price', 'stock', 'features'))
+            bot_response = generate_response_agent(results, user_message)
+            return bot_response
+        except Exception as e:
+            logger.error(f"Error generando respuesta del bot: {str(e)}")
+            return "Lo siento, hubo un error procesando tu mensaje."
