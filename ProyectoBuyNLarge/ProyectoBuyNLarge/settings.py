@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'users',
     'inventory',
     'chatbot',
+    'recomendations',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
