@@ -58,6 +58,7 @@ class KPIView(APIView):
 class GraphicsView(APIView):
     # 1. Distribución por Categoría/Brand
 
+    @staticmethod
     def datos_distribucion_stock(grupo_por='category'):
         """
         Parámetros: 'category' o 'brand'
@@ -72,6 +73,7 @@ class GraphicsView(APIView):
             'datos': [item['total_stock'] for item in grouped]
         }
 
+    @staticmethod
     def datos_mapa_arbol():
         """
         Retorna estructura jerárquica para mapa de árbol:
@@ -96,9 +98,7 @@ class GraphicsView(APIView):
         
         return estructura
 
-
-    # 2. Análisis de Características Técnicas
-
+    @staticmethod
     def datos_barras_agrupadas_features(feature_keys=['ram', 'storage']):
         """
         Parámetros: Lista de características a combinar
@@ -117,9 +117,7 @@ class GraphicsView(APIView):
             'datos': list(combinaciones.values())
         }
 
-
-    # 3. Evolución Temporal
-
+    @staticmethod
     def datos_linea_tiempo(rango_meses=12):
         """
         Parámetros: Cantidad de meses a visualizar
@@ -136,6 +134,7 @@ class GraphicsView(APIView):
             'stock': [item['total_stock'] for item in data]
         }
 
+    @staticmethod
     def datos_areas_apiladas(rango_meses=6):
         """
         Parámetros: Cantidad de meses a visualizar
@@ -160,11 +159,11 @@ class GraphicsView(APIView):
     
     def get(self, request):
         datos = {
-            'distribucion_stock': self.datos_distribucion_stock(),
-            'mapa_arbol': self.datos_mapa_arbol(),
-            'barras_agrupadas_features': self.datos_barras_agrupadas_features(),
-            'linea_tiempo': self.datos_linea_tiempo(),
-            'areas_apiladas': self.datos_areas_apiladas()
+            'distribucion_stock': GraphicsView.datos_distribucion_stock(),
+            'mapa_arbol': GraphicsView.datos_mapa_arbol(),
+            'barras_agrupadas_features': GraphicsView.datos_barras_agrupadas_features(),
+            'linea_tiempo': GraphicsView.datos_linea_tiempo(),
+            'areas_apiladas': GraphicsView.datos_areas_apiladas()
         }
         return Response(datos)
 
@@ -172,6 +171,7 @@ class GraphicsView(APIView):
 
 class TablaView(APIView):
 
+    @staticmethod
     def top_productos_stock_bajo(limite=5):
         """
         Retorna los productos con menor stock
@@ -185,6 +185,7 @@ class TablaView(APIView):
         
         return list(productos)
 
+    @staticmethod
     def top_movimientos_recientes(limite=5):
         """
         Productos con actualizaciones más recientes
@@ -202,6 +203,7 @@ class TablaView(APIView):
         
         return list(productos)
 
+    @staticmethod
     def top_combinaciones_caracteristicas(limite=5):
         """
         Ranking de combinaciones de features con mayor stock
@@ -229,8 +231,8 @@ class TablaView(APIView):
     
     def get(self, request):
         tablas = {
-            'productos_stock_bajo': self.top_productos_stock_bajo(),
-            'movimientos_recientes': self.top_movimientos_recientes(),
-            'combinaciones_caracteristicas': self.top_combinaciones_caracteristicas()
+            'productos_stock_bajo': TablaView.top_productos_stock_bajo(),
+            'movimientos_recientes': TablaView.top_movimientos_recientes(),
+            'combinaciones_caracteristicas': TablaView.top_combinaciones_caracteristicas()
         }
         return Response(tablas)
