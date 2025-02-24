@@ -2,6 +2,7 @@ from django.db import models
 from users.models import CustomUser
 from .product import Product
 
+#order model
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pendiente'),
@@ -9,6 +10,7 @@ class Order(models.Model):
         ('canceled', 'Cancelado'),
     ]
 
+    #order fields
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     quantity = models.PositiveIntegerField()

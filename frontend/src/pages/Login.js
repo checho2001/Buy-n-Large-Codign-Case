@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../styles/Login.css'; // Importa el archivo CSS
 import { login } from '../services/auth';  // Importar el servicio de autenticación
 import { getRole } from '../services/role';  // Importar el servicio de roles
 
 const Login = () => {
-    const [username, setUsername] = useState('');  // Cambiar email por username
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -13,7 +14,8 @@ const Login = () => {
         e.preventDefault();
         try {
             const data = await login(username, password);
-            localStorage.setItem('token', data.access);
+            // Guardar el token con el prefijo 'Bearer'
+            localStorage.setItem('jwt_token', data.access); 
             
             // Obtener el rol del usuario
             const roleData = await getRole(data.access);
@@ -34,12 +36,12 @@ const Login = () => {
             <div style={styles.container}>
                 <h2 style={styles.h2}>Bienvenido(a)</h2>
                 <form onSubmit={handleLogin}>
-                    <label>Usuario</label>  
+                    <label>Usuario</label>
                     <input
-                        type="text"  
+                        type="text"
                         placeholder="Ingresa tu usuario"
-                        value={username}  
-                        onChange={(e) => setUsername(e.target.value)}  
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
                         style={styles.input}
                     />
@@ -56,7 +58,10 @@ const Login = () => {
                         Iniciar Sesión
                     </button>
                 </form>
-                <button style={styles.btnSecondary} onClick={() => navigate('/register')}>
+                <button 
+                    style={styles.btnSecondary} 
+                    onClick={() => navigate('/register')}
+                >
                     Registrarse
                 </button>
                 <a href="#" style={styles.forgot}>¿Olvidaste tu contraseña?</a>

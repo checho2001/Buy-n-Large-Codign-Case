@@ -9,14 +9,18 @@ from .models.chat_session import ChatSession
 from .models.chat_message import ChatMessage
 from rest_framework import viewsets
 from django.db.models import Subquery, OuterRef
+from decimal import Decimal
 
 from inventory.models import Product
+from recomendations.models import Recommendation
 from .models import ChatSession, ChatMessage  # Importamos los nuevos modelos
 import requests
 import json
 from dotenv import load_dotenv
 import os
 import logging
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Cargar variables de entorno
 load_dotenv()
@@ -104,9 +108,113 @@ def generate_response_agent(results, question):
     - Resultados: {json.dumps(processed_results[:3]) if len(processed_results) > 3 else processed_results}
     """
     
+    return get_openai_response([{
+        "role": "system",
+        "content": system_prompt
+    }])
+
+def generate_recommendations_query(user_history, chat_history):
+    try:
+        # Extraer las categorías y marcas más frecuentes del historial
+        preferred_categories = list(set([h['product__category'] for h in user_history if h['product__category']]))
+        preferred_brands = list(set([h['product__brand'] for h in user_history if h['product__brand']]))
+        
+        # Construir la query directamente en lugar de usar OpenAI
+        if preferred_categories and preferred_brands:
+            query = """
+            Product.objects.filter(
+                recommendation__user=user,
+                stock__gt=0
+            ).filter(
+                category__in=preferred_categories
+            ).order_by('-recommendation__score', '-recommendation__created_at').distinct()[:5]
+            """
+        else:
+            query = """
+            Product.objects.filter(
+                recommendation__user=user,
+                stock__gt=0
+            ).order_by('-recommendation__score', '-recommendation__created_at').distinct()[:5]
+            """
+
+        logger.info(f"Query de recomendaciones generada: {query}")
+        return query.strip()
+
+    except Exception as e:
+        logger.error(f"Error generando query de recomendaciones: {str(e)}")
+        return """
+        Product.objects.filter(
+            recommendation__user=user,
+            stock__gt=0
+        ).order_by('-recommendation__score').distinct()[:5]
+        """
+
+def get_user_recommendations(request, user_message, session_id=None):
+    try:
+        user = request.user if request.user.is_authenticated else None
+        if not user:
+            print("No hay usuario autenticado")
+            return []
+
+        # Obtener historial de recomendaciones
+        user_history = Recommendation.objects.filter(user=user)
+
+        # Consulta directa con clasificación
+        all_products = Product.objects.filter(
+            recommendation__user=user,
+            stock__gt=0
+        ).order_by('-recommendation__score', '-recommendation__created_at').distinct()
+
+        # Inicializar lista para los productos
+        products_data = []
+        for product in all_products:
+            recommendation = Recommendation.objects.filter(user=user, product=product).first()
+            score = recommendation.score if recommendation else 0
+            
+            product_data = {
+                'name': product.name,
+                'brand': product.brand,
+                'price': float(product.price) if isinstance(product.price, Decimal) else product.price,
+                'stock': product.stock,
+                'features': product.features,
+                'score': score
+            }
+            products_data.append(product_data)
+
+        # Ordenar los productos por score
+        products_data.sort(key=lambda x: x['score'])
+
+        # Seleccionar el mejor, el del medio y el peor producto
+        best_product = products_data[-1] if len(products_data) > 0 else None  # Mejor producto
+        average_product = products_data[len(products_data) // 2] if len(products_data) > 1 else None  # Producto del medio
+        worst_product = products_data[0] if len(products_data) > 0 else None  # Peor producto
+
+        # Crear una lista de recomendaciones
+        recommendations = []
+        if best_product:
+            recommendations.append(best_product)
+        if average_product:
+            recommendations.append(average_product)
+        if worst_product:
+            recommendations.append(worst_product)
+
+        print("\n=== Productos Clasificados ===")
+        print(f"Mejor Producto: {best_product}")
+        print(f"Producto del Medio: {average_product}")
+        print(f"Peor Producto: {worst_product}")
+
+        return recommendations
+
+    except Exception as e:
+        print(f"\n=== Error en Recomendaciones ===")
+        print(f"Error: {str(e)}")
+        logger.error(f"Error en recomendaciones: {str(e)}")
+        return []
+
     return get_openai_response([{"role": "system", "content": system_prompt}])
 
 class ChatBotViewSet(viewsets.ViewSet):
+    # Obtener conversaciones del usuario
     def get_conversations(self, request):
         try:
             user = request.user if request.user.is_authenticated else None
@@ -150,7 +258,32 @@ class ChatBotViewSet(viewsets.ViewSet):
             logger.error(f"Error obteniendo mensajes: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+class BaseChatView(APIView):
+    def get_user(self, request):
+        return request.user if request.user.is_authenticated else None
+
+class ChatHistoryView(BaseChatView):
+    def get(self, request):
+        user = self.get_user(request)
+        if not user:
+            return Response({"error": "No authenticated user"}, status=status.HTTP_401_UNAUTHORIZED)
+        # Lógica para obtener el historial de chat
+        return Response({"history": "Chat history data"})
+
+class SendMessageView(BaseChatView):
+    def post(self, request):
+        user = self.get_user(request)
+        if not user:
+            return Response({"error": "No authenticated user"}, status=status.HTTP_401_UNAUTHORIZED)
+        # Lógica para enviar un mensaje
+        return Response({"message": "Message sent"}, status=status.HTTP_200_OK)
+
 class ChatBotView(APIView):
+    authentication_classes = [JWTAuthentication]
+    # Si quieres que la autenticación sea opcional, no incluyas permission_classes
+    # Si quieres que sea obligatoria, descomenta la siguiente línea:
+    # permission_classes = [IsAuthenticated]
+
     @transaction.atomic
     def post(self, request):
         try:
@@ -158,10 +291,14 @@ class ChatBotView(APIView):
             user_message = data.get('message')
             session_id = data.get('session_id')
             
-            # Manejar usuario anónimo o autenticado
+            # Obtener el usuario autenticado
             user = request.user if request.user.is_authenticated else None
-
-            logger.info(f"Procesando mensaje: {user_message} para sesión: {session_id}")
+            logger.info(f"Usuario autenticado: {user}")
+            
+            print(user_message)
+            print(session_id)
+            
+            print(f"Procesando mensaje: {user_message} para sesión: {session_id}")
 
             # Validar mensaje
             if not user_message:
@@ -178,27 +315,60 @@ class ChatBotView(APIView):
                 chat_session = ChatSession.objects.create(user=user)
                 logger.info(f"Nueva sesión creada: {chat_session.id}")
 
-            # Guardar mensaje del usuario
+            # Generar respuesta del bot
+            history_chat = get_chat_history(chat_session.id)
+            generated_query = generate_query_agent(user_message, history_chat)
+            products = eval(generated_query, {"__builtins__": None}, {'Product': Product})
+            results = list(products.values('name', 'brand', 'price', 'stock', 'features'))
+            
+
+
+            # Guardar recomendaciones solo si el usuario está autenticado
+            if user and user.is_authenticated:
+                for product in products:
+                    # Determinar categoría y score basado en stock y precio
+                    if product.stock > 10 and product.price < Decimal('1000'):
+                        category = 'Altamente Recomendado'
+                        score = Decimal('0.95')
+                    elif product.stock > 0:
+                        category = 'Recomendado'
+                        score = Decimal('0.75')
+                    else:
+                        category = 'No Recomendado'
+                        score = Decimal('0.50')
+
+                    # Crear o actualizar recomendación
+                    Recommendation.objects.update_or_create(
+                        user=user,
+                        product=product,
+                        defaults={
+                            'score': score,
+                            'category': category
+                        }
+                    )
+                    print(f"Recomendación guardada: {product.name} para {user.username}")
+                    logger.info(f"Guardando recomendación para usuario: {user.username}")
+
+            bot_response = generate_response_agent(results, user_message)
+
+            # Guardar mensajes
             user_message_obj = ChatMessage.objects.create(
                 session=chat_session,
                 message_text=user_message,
                 is_bot=False
             )
-            logger.info(f"Mensaje de usuario guardado: {user_message_obj.id}")
 
-            # Generar respuesta del bot
-            history_chat = get_chat_history(chat_session.id)
-            bot_response = self.generate_bot_response(user_message,history_chat)
-
-            # Guardar respuesta del bot
             bot_message = ChatMessage.objects.create(
                 session=chat_session,
                 message_text=bot_response,
                 is_bot=True
             )
-            logger.info(f"Respuesta del bot guardada: {bot_message.id}")
 
-            return Response({
+            # Obtener recomendaciones personalizadas
+            recommended_products = get_user_recommendations(request, user_message, session_id)
+
+            # Incluir recomendaciones en la respuesta
+            response_data = {
                 "session_id": str(chat_session.id),
                 "messages": {
                     "user_message": {
@@ -211,13 +381,17 @@ class ChatBotView(APIView):
                         "text": bot_message.message_text,
                         "created_at": bot_message.created_at
                     }
-                }
-            }, status=status.HTTP_200_OK)
+                },
+                "recommendations": recommended_products if recommended_products else []
+            }
+            
+            print(response_data)
+            return Response(response_data, status=status.HTTP_200_OK)
 
         except Exception as e:
             logger.error(f"Error en el procesamiento del chat: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+    
     def get(self, request):
         try:
             session_id = request.GET.get('session_id')

@@ -6,19 +6,25 @@ export const login = async (username, password) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
             },
             body: JSON.stringify({
-                username: username,
-                password: password,
+                username,
+                password,
             }),
         });
 
         if (!response.ok) {
-            throw new Error('Credenciales inválidas');
+            throw new Error('Error en la autenticación');
         }
 
         const data = await response.json();
+        
+        // Verificar que recibimos el token
+        if (!data.access) {
+            throw new Error('Token no recibido');
+        }
+
+        console.log('Login exitoso, token recibido'); // Para debugging
         return data;
     } catch (error) {
         console.error('Error en login:', error);
