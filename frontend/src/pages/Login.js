@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/auth';  // Importar el servicio de autenticación
+import { getRole } from '../services/role';  // Importar el servicio de roles
 
 const Login = () => {
     const [username, setUsername] = useState('');  // Cambiar email por username
@@ -11,11 +12,20 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const data = await login(username, password);  // Cambiar email por username
-            localStorage.setItem('token', data.access);  // Guardar el token en localStorage
-            navigate('/home');  // Redirigir a la página de inicio
+            const data = await login(username, password);
+            localStorage.setItem('token', data.access);
+            
+            // Obtener el rol del usuario
+            const roleData = await getRole(data.access);
+            
+            // Redirigir según el rol
+            if (roleData.role === 'admin') {
+                navigate('/dashboard');
+            } else {
+                navigate('/home');
+            }
         } catch (err) {
-            setError('Usuario o contraseña incorrectos');  // Cambiar el mensaje de error
+            setError('Usuario o contraseña incorrectos');
         }
     };
 
