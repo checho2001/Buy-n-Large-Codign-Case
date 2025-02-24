@@ -1,0 +1,162 @@
+Para documentar el backend de tu proyecto Django, es importante seguir una estructura clara que incluya información sobre la configuración del proyecto, las aplicaciones, los modelos, las vistas, los endpoints de la API y cómo realizar pruebas. A continuación, te presento un ejemplo de cómo podrías estructurar la documentación de tu backend.
+
+# Documentación del Backend de Proyecto BuyNLarge
+
+## 1. Introducción
+
+Este proyecto es una aplicación de comercio electrónico que permite a los usuarios interactuar con un chatbot para obtener recomendaciones de productos y realizar compras. El backend está construido con Django y Django REST Framework.
+
+## 2. Configuración del Proyecto
+
+### Requisitos
+
+- Python 3.x
+- Django 5.x
+- Django REST Framework
+- Otras dependencias especificadas en `requirements.txt`
+
+### Instalación
+
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/tu_usuario/ProyectoBuyNLarge.git
+   cd ProyectoBuyNLarge
+   ```
+
+2. Crea un entorno virtual y actívalo:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # En Windows usa `venv\Scripts\activate`
+   ```
+
+3. Instala las dependencias:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Configura las variables de entorno en un archivo `.env`.
+
+5. Realiza las migraciones:
+   ```bash
+   python manage.py migrate
+   ```
+
+6. Carga los datos iniciales (opcional):
+   ```bash
+   python manage.py loaddata fixtures/precharge-products.json
+   ```
+
+7. Inicia el servidor:
+   ```bash
+   python manage.py runserver
+   ```
+
+## 3. Estructura del Proyecto
+
+El proyecto está organizado en varias aplicaciones:
+
+- **chatbot**: Maneja la lógica del chatbot, incluyendo sesiones de chat y mensajes.
+- **inventory**: Gestiona los productos y órdenes de compra.
+
+## 4. Modelos
+
+### 4.1. ChatMessage
+
+```python
+class ChatMessage(models.Model):
+    message_text = models.TextField()
+    is_bot = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    product = models.ForeignKey(Product, blank=True, null=True, on_delete=models.SET_NULL)
+    session = models.ForeignKey(ChatSession, on_delete=models.CASCADE)
+```
+
+### 4.2. ChatSession
+
+```python
+class ChatSession(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(blank=True, null=True)
+```
+
+### 4.3. Product
+
+```python
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    brand = models.CharField(max_length=100)
+    category = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField(default=0)
+    features = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+```
+
+### 4.4. Order
+
+```python
+class Order(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    quantity = models.PositiveIntegerField()
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+```
+
+## 5. Vistas y Endpoints
+
+### 5.1. Chatbot API
+
+- **POST /chatbot/v1/make_question/**: Envía un mensaje al chatbot y recibe una respuesta.
+  - **Request Body**:
+    ```json
+    {
+        "message": "¿Tienes computadoras de otra marca?",
+        "session_id": "uuid"
+    }
+    ```
+  - **Response**:
+    ```json
+    {
+        "session_id": "uuid",
+        "response": "Aquí tienes algunas opciones...",
+        "results_count": 5
+    }
+    ```
+
+### 5.2. Product API
+
+- **GET /api/products/**: Obtiene una lista de productos.
+- **POST /api/products/**: Crea un nuevo producto.
+
+## 6. Pruebas
+
+Las pruebas se pueden ejecutar utilizando el framework de pruebas de Django. Para ejecutar las pruebas, utiliza el siguiente comando:
+
+```bash
+python manage.py test
+```
+
+### 6.1. Ejemplo de Pruebas
+
+Se incluyen pruebas para el endpoint del chatbot y para la creación de productos. Las pruebas se encuentran en `chatbot/test/chatbot_test.py`.
+
+## 7. Contribuciones
+
+Si deseas contribuir a este proyecto, por favor sigue estos pasos:
+
+1. Haz un fork del repositorio.
+2. Crea una nueva rama para tu característica o corrección de errores.
+3. Realiza tus cambios y asegúrate de que las pruebas pasen.
+4. Envía un pull request.
+
+## 8. Licencia
+
+Este proyecto está bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.
+
+---
+
+Esta es una estructura básica de documentación que puedes expandir según las necesidades de tu proyecto. Asegúrate de mantener la documentación actualizada a medida que el proyecto evoluciona. Si necesitas más detalles sobre alguna sección específica o ayuda adicional, no dudes en preguntar.
