@@ -1,7 +1,9 @@
 from django.db import models
 from django.utils import timezone
 
+#product model
 class Product(models.Model):
+    #product fields
     name = models.CharField(max_length=255)
     brand = models.CharField(max_length=100)
     category = models.CharField(max_length=100)

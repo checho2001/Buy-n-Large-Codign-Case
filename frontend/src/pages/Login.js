@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/auth';  // Importar el servicio de autenticación
+import '../styles/Login.css'; // Importa el archivo CSS
+import { login } from '../services/auth';
 
 const Login = () => {
-    const [username, setUsername] = useState('');  // Cambiar email por username
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -11,11 +12,14 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const data = await login(username, password);  // Cambiar email por username
-            localStorage.setItem('token', data.access);  // Guardar el token en localStorage
-            navigate('/home');  // Redirigir a la página de inicio
+            const data = await login(username, password);
+            // Guardar el token con el prefijo 'Bearer'
+            localStorage.setItem('jwt_token', data.access); 
+            console.log('Token guardado:', data.access); 
+            navigate('/home');
         } catch (err) {
-            setError('Usuario o contraseña incorrectos');  // Cambiar el mensaje de error
+            console.error('Error de login:', err); 
+            setError('Usuario o contraseña incorrectos');
         }
     };
 
@@ -24,12 +28,12 @@ const Login = () => {
             <div style={styles.container}>
                 <h2 style={styles.h2}>Bienvenido(a)</h2>
                 <form onSubmit={handleLogin}>
-                    <label>Usuario</label>  
+                    <label>Usuario</label>
                     <input
-                        type="text"  
+                        type="text"
                         placeholder="Ingresa tu usuario"
-                        value={username}  
-                        onChange={(e) => setUsername(e.target.value)}  
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
                         style={styles.input}
                     />
@@ -46,7 +50,10 @@ const Login = () => {
                         Iniciar Sesión
                     </button>
                 </form>
-                <button style={styles.btnSecondary} onClick={() => navigate('/register')}>
+                <button 
+                    style={styles.btnSecondary} 
+                    onClick={() => navigate('/register')}
+                >
                     Registrarse
                 </button>
                 <a href="#" style={styles.forgot}>¿Olvidaste tu contraseña?</a>

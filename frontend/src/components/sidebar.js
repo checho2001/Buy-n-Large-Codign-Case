@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { getCSRFToken } from '../utils/csrf';
+import '../styles/Sidebar.css'; // Importa el archivo CSS
 
 const Sidebar = ({ onSelectConversation }) => {
     const [recentConversations, setRecentConversations] = useState([]);
@@ -44,98 +46,34 @@ const Sidebar = ({ onSelectConversation }) => {
     };
 
     return (
-        <aside style={{ 
-            width: '250px', // Ancho fijo en lugar de porcentaje
-            background: '#f0f0f5', 
-            padding: '20px',
-            borderRight: '1px solid #ddd',
-            height: '100vh',
-            overflowY: 'auto'
-        }}>
-            <div style={{ 
-                textAlign: 'center',
-                marginBottom: '20px',
-                borderBottom: '1px solid #ddd',
-                paddingBottom: '20px'
-            }}>
-                <img 
-                    src="perfil.jpg" 
-                    alt="Foto de perfil" 
-                    style={{ 
-                        borderRadius: '50%', 
-                        width: '80px',
-                        marginBottom: '10px'
-                    }} 
-                />
-                <p style={{ margin: 0 }}>Perfil</p>
+        <aside className="sidebar">
+            <div className="sidebar-header">
+                <img src="perfil.jpg" alt="Foto de perfil" />
+                <p>Perfil</p>
             </div>
             
             <nav>
-                <div style={{ marginBottom: '20px' }}>
-                    <p style={{ 
-                        padding: '10px', 
-                        margin: '5px 0',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        ':hover': { backgroundColor: '#e6e6e6' }
-                    }}>Dashboard</p>
-                    <p style={{ 
-                        padding: '10px', 
-                        margin: '5px 0',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        ':hover': { backgroundColor: '#e6e6e6' }
-                    }}>Historial</p>
+                <div>
+                    <p className="nav-item">Dashboard</p>
+                    <p className="nav-item">Historial</p>
                 </div>
 
-                <h3 style={{ 
-                    marginBottom: '15px',
-                    fontSize: '1.1em',
-                    color: '#333'
-                }}>Conversaciones recientes</h3>
+                <h3 className="recent-conversations">Conversaciones recientes</h3>
 
-                <ul style={{ 
-                    listStyle: 'none', 
-                    padding: 0,
-                    margin: 0
-                }}>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                     {recentConversations.map((conv) => (
                         <li 
                             key={conv.id}
                             onClick={() => onSelectConversation(conv.id)}
-                            style={{
-                                padding: '10px',
-                                marginBottom: '10px',
-                                background: '#fff',
-                                borderRadius: '5px',
-                                cursor: 'pointer',
-                                transition: 'background-color 0.3s',
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e6e6e6'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                            className="conversation-item"
                         >
-                            <div style={{ 
-                                fontSize: '0.9em', 
-                                fontWeight: 'bold',
-                                marginBottom: '5px'
-                            }}>
+                            <div className="conversation-title">
                                 Conversación {conv.id.slice(0, 8)}...
                             </div>
-                            <div style={{ 
-                                fontSize: '0.8em', 
-                                color: '#666',
-                                marginBottom: '5px'
-                            }}>
+                            <div className="conversation-date">
                                 {formatDate(conv.created_at)}
                             </div>
-                            <div style={{ 
-                                fontSize: '0.8em', 
-                                color: '#444',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                            }}>
+                            <div className="conversation-last-message">
                                 {conv.last_message?.slice(0, 30)}...
                             </div>
                         </li>

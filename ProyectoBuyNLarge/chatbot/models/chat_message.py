@@ -2,6 +2,7 @@ from django.db import models
 from .chat_session import ChatSession
 from inventory.models import Product
 
+#chat message model
 class ChatMessage(models.Model):
     session = models.ForeignKey(ChatSession, on_delete=models.CASCADE)
     message_text = models.TextField()
