@@ -3,7 +3,7 @@ from .views import ChatBotView, ChatBotViewSet
 
 urlpatterns = [
     # Ruta principal para el chatbot
-    path('api/chatbot/', ChatBotView.as_view(), name='chatbot'),
+    path('', ChatBotView.as_view(), name='chatbot'),
     
     # Rutas para gestión de conversaciones
     path('api/chatbot/conversations/', 
