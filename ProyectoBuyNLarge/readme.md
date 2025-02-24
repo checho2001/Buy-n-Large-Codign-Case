@@ -137,13 +137,6 @@ ProyectoBuyNLarge/
 - `total_price`: Precio total de la orden.
 - `status`: Estado de la orden.
 
-## Pruebas
-
-Las pruebas se pueden ejecutar utilizando el framework de pruebas de Django. Para ejecutar las pruebas, utiliza el siguiente comando:
-
-```bash
-python manage.py test
-```
 ##Cargue de Productos
 python manage.py loaddata fixtures/precharge-products.json
 
