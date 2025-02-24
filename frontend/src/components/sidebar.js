@@ -54,7 +54,6 @@ const Sidebar = ({ onSelectConversation }) => {
             
             <nav>
                 <div>
-                    <p className="nav-item">Dashboard</p>
                     <p className="nav-item">Historial</p>
                 </div>
 

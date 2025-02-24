@@ -75,7 +75,7 @@ def generate_query_agent(prompt, chat_history):
        - Product.objects.filter(features__storage__icontains='512GB').exclude(stock=0)
        - ¡INCORRECTO! Product.objects.filter(category='Laptops').count()
     5. CRUCIAL: Solo usa métodos que devuelvan registros (filter/get/exclude/order_by). Prohibido count/aggregate/annotate/values
-    6. Ten en cuenta que hay estas opciones de categoria {possible_filter_options[0]} y de marca {possible_filter_options[1]}
+    6. Ten en cuenta que hay estas opciones de categoria {categories} y de marca {brands}
     7. Ten en cuenta que el usuario tiene un historial de preguntas y respuestas {chat_history}
     
     
