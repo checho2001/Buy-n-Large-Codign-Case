@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Login.css'; // Importa el archivo CSS
-import { login } from '../services/auth';
+import { login } from '../services/auth';  // Importar el servicio de autenticación
+import { getRole } from '../services/role';  // Importar el servicio de roles
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -15,10 +16,17 @@ const Login = () => {
             const data = await login(username, password);
             // Guardar el token con el prefijo 'Bearer'
             localStorage.setItem('jwt_token', data.access); 
-            console.log('Token guardado:', data.access); 
-            navigate('/home');
+            
+            // Obtener el rol del usuario
+            const roleData = await getRole(data.access);
+            
+            // Redirigir según el rol
+            if (roleData.role === 'admin') {
+                navigate('/dashboard');
+            } else {
+                navigate('/home');
+            }
         } catch (err) {
-            console.error('Error de login:', err); 
             setError('Usuario o contraseña incorrectos');
         }
     };

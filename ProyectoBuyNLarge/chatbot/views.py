@@ -1,6 +1,5 @@
 from django.core.cache import cache
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,7 +13,7 @@ from decimal import Decimal
 
 from inventory.models import Product
 from recomendations.models import Recommendation
-
+from .models import ChatSession, ChatMessage  # Importamos los nuevos modelos
 import requests
 import json
 from dotenv import load_dotenv
@@ -23,20 +22,17 @@ import logging
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-
-OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions"
-
-
-load_dotenv()  # carga las variables del .env
-
-## DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
+# Cargar variables de entorno
+load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI-API-KEY')
 
-DEEPSEEK_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
+# Configuración de endpoints de IA
+OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions"
 
 logger = logging.getLogger(__name__)
 
 def get_openai_response(messages, temperature=0.3, model="gpt-4o-mini"):
+    """Obtiene respuesta de la API de OpenAI con seguridad mejorada"""
     headers = {
         "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json"
@@ -59,16 +55,18 @@ def get_chat_history(session_id):
         formatted_history.append({"role": role, "content": msg.message_text})
     return formatted_history
 
+
 def get_possible_filter_options():
-    qcat = Product.objects.values('category').distinct()
-    qbrand = Product.objects.values('brand').distinct()
+    """Obtiene opciones de filtrado disponibles desde la base de datos"""
+    categories = Product.objects.values_list('category', flat=True).distinct()
+    brands = Product.objects.values_list('brand', flat=True).distinct()
+    return str(categories), str(brands)
 
-    return [str(qcat), str(qbrand)]
-
-# Modificaciones en los agentes (solo cambia la función de llamada)
 def generate_query_agent(prompt, chat_history):
-    possible_filter_options = get_possible_filter_options()
-    system_prompt = f"""Eres un experto en Django ORM. Genera consultas de base de datos basadas en:
+    """Genera consultas de base de datos usando IA con contexto histórico"""
+    categories, brands = get_possible_filter_options()
+    
+    system_prompt = f"""Eres un experto en Django ORM. Instrucciones:
     1. Campos disponibles: name, brand, category, price, stock, features (JSON)
     2. Para features usar sintaxis de doble guión: features__ram=16GB
     3. Solo devuelve el código Python/Django ORM, sin explicaciones y tampoco tags de descripción de código
@@ -84,13 +82,14 @@ def generate_query_agent(prompt, chat_history):
     Pregunta del usuario: {prompt}
     """
     print(system_prompt)
+
     return get_openai_response([
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": prompt}
     ])
 
 def generate_response_agent(results, question):
-    # Convertir Decimal a float en los resultados
+    """Genera respuestas naturales basadas en resultados de productos"""
     processed_results = []
     for item in results:
         processed_item = item.copy()
@@ -98,23 +97,16 @@ def generate_response_agent(results, question):
             processed_item['price'] = float(processed_item['price'])
         processed_results.append(processed_item)
 
-    system_prompt = f"""Analiza estos resultados de productos y genera una respuesta natural:
+    system_prompt = f"""Analiza estos resultados y genera una respuesta natural:
+
     - Destaca características clave
     - Menciona disponibilidad
     - Precios relevantes
     - Mantén respuestas concisas
-    
-    Pregunta original: {question}
+    - Trata de animar al usuario a comprar el articulo o seguir explorando
+    - Pregunta: {question}
+    - Resultados: {json.dumps(processed_results[:3]) if len(processed_results) > 3 else processed_results}
     """
-
-    if len(processed_results) < 3:
-        system_prompt += f"""
-        Resultados: {json.dumps(processed_results)}
-        """
-    else:
-        system_prompt += f"""
-        Resultados: {json.dumps(processed_results[:3])} (mostrando primeros 3 de {len(processed_results)})
-        """
     
     return get_openai_response([{
         "role": "system",
@@ -218,6 +210,8 @@ def get_user_recommendations(request, user_message, session_id=None):
         print(f"Error: {str(e)}")
         logger.error(f"Error en recomendaciones: {str(e)}")
         return []
+
+    return get_openai_response([{"role": "system", "content": system_prompt}])
 
 class ChatBotViewSet(viewsets.ViewSet):
     # Obtener conversaciones del usuario
@@ -436,3 +430,108 @@ class ChatBotView(APIView):
         except Exception as e:
             logger.error(f"Error generando respuesta del bot: {str(e)}")
             return "Lo siento, hubo un error procesando tu mensaje."
+
+
+
+class ChatBotView(APIView):
+    """ Uncomment this code for JWT and user validation
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]  # Opcional: permite anónimos si lo necesitas
+    """
+    def post(self, request):
+        """Maneja la lógica principal del chatbot con persistencia en DB"""
+        try:
+            data = json.loads(request.body)
+            user_message = data['message']
+            
+            # 1. Manejo de sesiones
+            session, created = ChatSession.objects.get_or_create(
+                id=request.data.get('session_id'),  # Si viene de frontend
+                defaults={
+                    'user': request.user if request.user.is_authenticated else None
+                }
+            )
+            
+            # 2. Recuperar historial desde DB en lugar de caché
+            chat_history = ChatMessage.objects.filter(
+                session=session
+            ).order_by('created_at')[:10]  # Últimos 10 mensajes
+            
+            # 3. Formatear historial para los agentes de IA
+            formatted_history = []
+            for msg in chat_history:
+                role = "assistant" if msg.is_bot else "user"
+                formatted_history.append({"role": role, "content": msg.message_text})
+            
+            # 4. Generar consulta de productos
+            generated_query = generate_query_agent(user_message, formatted_history)
+            
+            # 5. Ejecutar consulta de forma segura
+            safe_globals = {'Product': Product}
+            try:
+                products = eval(generated_query, {"__builtins__": None}, safe_globals)
+                results = list(products.values('name', 'brand', 'price', 'stock', 'features'))
+            except Exception as e:
+                results = []
+                error_message = f"Error en consulta: {str(e)}"
+                ChatMessage.objects.create(
+                    session=session,
+                    message_text=error_message,
+                    is_bot=True
+                )
+                return JsonResponse({"error": error_message}, status=400)
+            
+            # 6. Generar respuesta natural
+            bot_response = generate_response_agent(results, user_message)
+            
+            # 7. Guardar en base de datos (ambos mensajes)
+            ChatMessage.objects.bulk_create([
+                ChatMessage(
+                    session=session,
+                    message_text=user_message,
+                    is_bot=False
+                ),
+                ChatMessage(
+                    session=session,
+                    message_text=bot_response,
+                    is_bot=True,
+                    product=products.first() if results else None  # Vincular producto si existe
+                )
+            ])
+            
+            return JsonResponse({
+                "response": bot_response,
+                "results_count": len(results),
+                "session_id": str(session.id)  # Importante para continuar la conversación
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "JSON inválido"}, status=400)
+        except KeyError:
+            return JsonResponse({"error": "Campo 'message' requerido"}, status=400)
+        except Exception as e:
+            ChatMessage.objects.create(
+                session=session,
+                message_text=f"Error crítico: {str(e)}",
+                is_bot=True
+            )
+            return JsonResponse({"error": str(e)}, status=500)
+
+    def get(self, request):
+        """Obtiene información de sesión activa"""
+        session_id = request.query_params.get('session_id')
+        if session_id:
+            try:
+                session = ChatSession.objects.get(id=session_id)
+                messages = ChatMessage.objects.filter(session=session)
+                return JsonResponse({
+                    "session_id": str(session.id),
+                    "messages": [{
+                        "text": msg.message_text,
+                        "is_bot": msg.is_bot,
+                        "timestamp": msg.created_at
+                    } for msg in messages]
+                })
+            except ChatSession.DoesNotExist:
+                return JsonResponse({"error": "Sesión no encontrada"}, status=404)
+        return JsonResponse({"message": "Proporciona session_id para recuperar historial"}, status=400)
